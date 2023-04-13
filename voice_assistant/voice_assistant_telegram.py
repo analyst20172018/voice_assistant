@@ -123,7 +123,7 @@ class VoiceAssistantTelegram(VoiceAssistantBasic):
                 This method requires the openai, google-cloud-texttospeech, and telegram_bot libraries installed with valid API credentials.
         """
         offset = self._find_offset_of_the_last_message()
-        self.bot.send_message(self.USER_ID, 'Привет Никита')
+        self.bot.send_message(self.USER_ID, 'Hello')
 
         while True:
             response = self.bot.get_updates(offset=offset)
