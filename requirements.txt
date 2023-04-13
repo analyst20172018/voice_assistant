@@ -1,0 +1,7 @@
+google-cloud-texttospeech
+numpy
+openai
+pydub
+requests
+scipy
+sounddevice
