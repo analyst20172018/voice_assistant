@@ -13,6 +13,7 @@ setup(
         'scipy',
         'sounddevice',
         'winaudio',
+	'fire',
     ],
     entry_points={
         'console_scripts': [

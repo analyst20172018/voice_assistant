@@ -5,6 +5,7 @@ import time
 from pydub import AudioSegment
 from voice_assistant_basic import VoiceAssistantBasic
 import telegram_bot
+import fire
 
 
 class VoiceAssistantTelegram(VoiceAssistantBasic):
@@ -157,8 +158,10 @@ class VoiceAssistantTelegram(VoiceAssistantBasic):
             
             time.sleep(2)
 
-if __name__ == "__main__":
+def main(telegram_user_id):
     print('Starting ....')
-    #You should add your telegram_user_id here
-    assistant = VoiceAssistantTelegram(telegram_user_id=None, logging_level=logging.DEBUG)
+    assistant = VoiceAssistantTelegram(telegram_user_id, logging_level=logging.INFO)
     assistant.talk()
+
+if __name__ == "__main__":
+    fire.Fire(main)
