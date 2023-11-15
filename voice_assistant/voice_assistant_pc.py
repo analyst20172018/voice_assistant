@@ -48,7 +48,7 @@ class VoiceAssistantPC(VoiceAssistantBasic):
             channels (int): The number of audio channels.
             messages (list): A list of initial instructions for the conversation with a 7-year-old boy named Nikita.
             """
-        super().__init__(logging_level)
+        super().__init__(role_message='You are helpful assistant', logging_level=logging_level)
 
         #Set logging
         self.logger = logging.getLogger('VoiceAssistantPC')
@@ -142,12 +142,15 @@ class VoiceAssistantPC(VoiceAssistantBasic):
         return
 
     def play_answer(self, answer_text):
-        
-        #Converts the given text to speech using Google Text-to-Speech API and saves the result as an MP3 file.
-        answer_mp3_bytes = self.convert_text_to_speech(answer_text)
+        # Converts the given text to speech and returns an AudioSegment object
+        answer_audio_segment = self.convert_text_to_speech(answer_text)
 
-        #Plays the given MP3 audio bytes using the Windows Multimedia Audio API.
-        self.play_mp3(answer_mp3_bytes)
+        # Convert the AudioSegment object to raw bytes
+        answer_mp3_bytes = io.BytesIO()
+        answer_audio_segment.export(answer_mp3_bytes, format="mp3")
+
+        # Play the raw MP3 bytes
+        self.play_mp3(answer_mp3_bytes.getvalue())
 
     def talk(self):
         while True:

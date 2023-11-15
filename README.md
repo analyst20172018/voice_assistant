@@ -35,10 +35,12 @@ pip install -r requirements.txt
 
 3. Set up the necessary API credentials in your environment:
 
-- GOOGLE_APPLICATION_CREDENTIALS: Path to your Google Cloud API key file (JSON format).
-- OPENAI_API_KEY: Your OpenAI API key.
-- TELEGRAM_BOT_API_KEY: Your Telegram bot API key.
-- TELEGRAM_USER_ID: Your Telegram user ID (integer).
+The code will use the file .env (which you should create) in the folder "voice_assistant"
+
+The content of the ".env" file should be the following:
+> OPENAI_API_KEY=xxx
+> TELEGRAM_BOT_NAME=xxx
+> TELEGRAM_BOT_TOKEN=xxx
 
 ## Usage
 

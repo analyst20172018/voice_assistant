@@ -2,6 +2,7 @@ import requests
 import io
 import logging
 import os
+from dotenv import load_dotenv
 
 class TelegramBot:
 	"""
@@ -26,10 +27,6 @@ class TelegramBot:
 			Sends a photo to a user specified by the chat_id.
     """
 
-	bot_name = os.environ.get('TELEGRAM_BOT_NAME')
-	BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
-	TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
-
 	def __init__(self, logging_level=logging.DEBUG):
 		#Set logging
 		self.logger = logging.getLogger('TelegramBot')
@@ -39,6 +36,11 @@ class TelegramBot:
 		ch = logging.StreamHandler()
 		ch.setLevel(logging_level)
 		self.logger.addHandler(ch)
+
+		load_dotenv()
+		self.bot_name = os.environ.get('TELEGRAM_BOT_NAME')
+		self.BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+		self.TELEGRAM_API_URL = f"https://api.telegram.org/bot{self.BOT_TOKEN}"
 
 	def get_updates(self, offset=None):
 		"""

@@ -1,8 +1,10 @@
 import logging
 import os
-from google.cloud import texttospeech
-import openai
+from openai import OpenAI
 import requests
+from dotenv import load_dotenv
+from pydub import AudioSegment
+import io
 
 class VoiceAssistantBasic:
     """
@@ -35,7 +37,8 @@ class VoiceAssistantBasic:
         self.logger.addHandler(ch)
 
         self.logger.debug("Starting VoiceAssistant ...")
-        openai.api_key = os.environ.get('OPENAI_API_KEY')
+        load_dotenv()
+        self.client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
         self.messages = [{"role": "system", "content": role_message}]
 
@@ -61,7 +64,7 @@ class VoiceAssistantBasic:
         url = "https://api.openai.com/v1/audio/transcriptions"
     
         headers = {
-            "Authorization": f"Bearer {openai.api_key}",
+            "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
         }
         data = {
             "model": "whisper-1",
@@ -78,57 +81,19 @@ class VoiceAssistantBasic:
         self.logger.debug(f'Transcription: {response["text"]}')
         return response["text"]
 
-    def convert_text_to_speech(self, text_to_convert, language_code):
-        """
-            Converts the input text to speech using the Google Text-to-Speech API and returns the synthesized speech as binary data.
+    def convert_text_to_speech(self, text_to_convert):
+        response = self.client.audio.speech.create(
+                                    model="tts-1-hd",
+                                    voice="onyx",
+                                    input=r"\n\n" + text_to_convert,
+                                            )
 
-            This method takes the text to be converted into speech, sends it to the Google Text-to-Speech API, and retrieves the
-            synthesized speech in binary format.
+        # Convert the binary response content to a byte stream
+        byte_stream = io.BytesIO(response.content)
 
-            Args:
-                text_to_convert (str): The text to be converted into speech.
-
-            Returns:
-                bytes: The binary data of the synthesized speech.
-
-            Example:
-                text_to_convert = "Hello, world!"
-                audio_content = self.convert_text_to_speech(text_to_convert)
-
-            Note:
-                This method requires the google-cloud-texttospeech library installed and valid Google Cloud credentials.
-        """
-
-        client = texttospeech.TextToSpeechClient()
-        input_text = texttospeech.SynthesisInput(text=text_to_convert)
-
-        # Note: the voice can also be specified by name.
-        # Names of voices can be retrieved with client.list_voices().
-        voice = texttospeech.VoiceSelectionParams(
-            language_code=language_code,
-            #name="en-US-Wavenet-J",
-            ssml_gender=texttospeech.SsmlVoiceGender.MALE,
-        )
-
-        audio_config = texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.MP3 #LINEAR16
-        )
-
-        response = client.synthesize_speech(
-            request={"input": input_text, "voice": voice, "audio_config": audio_config}
-        )
-        # The response's audio_content is binary.
-        """
-        #Theoretically, I may write the sound into the file
-        with open("output.mp3", "wb") as out:
-            out.write(response.audio_content)
-            self.logger.debug('Audio content written to file "output.mp3"')
-            out.close()
-        while not os.path.exists("output.mp3"):
-            time.sleep(1)
-            self.logger.error('Error: File "output.mp3" does not exist.')
-        """
-        return response.audio_content
+        # Read the audio data from the byte stream
+        audio = AudioSegment.from_file(byte_stream, format="mp3")
+        return audio
 
     def ask_openai(self, question_text):
         """
@@ -153,14 +118,14 @@ class VoiceAssistantBasic:
         """
         self.logger.debug(f"Asking OpenAI...")
         self.messages.append({"role": "user", "content": question_text})
-        
-        response = openai.ChatCompletion.create(
+
+        response = self.client.chat.completions.create(
                         model="gpt-4",
                         messages=self.messages,
                         )
         
-        self.messages.append(response['choices'][0]['message'])
-        answer = response['choices'][0]['message']['content']
+        self.messages.append(response.choices[0].message)
+        answer = response.choices[0].message.content
 
         self.logger.debug(f"Answer: {answer}")
         return answer
